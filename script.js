@@ -253,108 +253,53 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Analytics tracking helper
+  // Analytics tracking helper (GA4 + Meta Pixel)
   window.trackEvent = function(eventName, params = {}) {
     if (typeof window.gtag === 'function') {
       window.gtag('event', eventName, params);
     }
+    if (typeof window.fbq === 'function') {
+      if (eventName === 'checkout_start') {
+        window.fbq('track', 'InitiateCheckout', {
+          content_name: 'PFL Photoshoot Generator V2',
+          content_category: 'AI Tool',
+          value: 990,
+          currency: 'THB'
+        });
+      } else {
+        window.fbq('trackCustom', eventName, params);
+      }
+    }
     console.log(`[Event Tracked] ${eventName}`, params);
   };
 
-  // Keep track of active parameters
-  const selections = {
-    product: 'dress',
-    model: 'korean',
-    location: 'studio',
-    mood: 'luxury'
+  // --- YOUTUBE SHORTS DEMO PLAYER LOGIC ---
+  const shortsContainer = document.getElementById('shortsPlayerContainer');
+  const shortsPoster = document.getElementById('shortsPoster');
+  const shortsIframe = document.getElementById('shortsIframe');
+
+  window.playShortsVideo = function() {
+    window.trackEvent('shorts_video_play');
+    if (shortsPoster) {
+      shortsPoster.classList.add('hidden');
+    }
+    if (shortsIframe) {
+      shortsIframe.src = 'https://www.youtube-nocookie.com/embed/jO3UOd4hLWE?autoplay=1&mute=0&playsinline=1&rel=0&modestbranding=1';
+    }
   };
 
-  let hasTrackedDemoStart = false;
-
-  // Function to handle parameter toggling
-  window.selectOption = function(category, value, element) {
-    if (selections[category] === value) return; // Ignore if clicking already active
-    
-    if (!hasTrackedDemoStart) {
-      window.trackEvent('demo_start', { category, value });
-      hasTrackedDemoStart = true;
-    }
-
-    selections[category] = value;
-
-    // Update pill states visually
-    const pills = document.querySelectorAll(`.pill-${category}`);
-    pills.forEach(pill => pill.classList.remove('active'));
-    element.classList.add('active');
-
-    // Trigger simulator loading state
-    const loader = document.getElementById('loader');
-    if (loader) {
-      loader.classList.add('active');
-    }
-    
-    setTimeout(() => {
-      updateSimulator();
-      if (loader) {
-        loader.classList.remove('active');
-      }
-      window.trackEvent('demo_complete', {
-        product: selections.product,
-        model: selections.model,
-        location: selections.location,
-        mood: selections.mood
-      });
-    }, 350);
-  };
-
-  // Function to update prompt text and image assets
-  function updateSimulator() {
-    const key = `product:${selections.product}|model:${selections.model}|location:${selections.location}|mood:${selections.mood}`;
-    const data = simulatorDatabase[key];
-
-    if (data) {
-      const promptBox = document.getElementById('prompt-output-box');
-      if (promptBox) {
-        promptBox.innerText = data.prompt;
-      }
-      
-      const imgElements = {
-        wide: document.getElementById('img-wide'),
-        medium: document.getElementById('img-medium'),
-        closeup: document.getElementById('img-closeup'),
-        candid: document.getElementById('img-candid'),
-        detail: document.getElementById('img-detail'),
-        hero: document.getElementById('img-hero')
-      };
-
-      if (imgElements.wide) imgElements.wide.src = data.images.wide;
-      if (imgElements.medium) imgElements.medium.src = data.images.medium;
-      if (imgElements.closeup) imgElements.closeup.src = data.images.closeup;
-      if (imgElements.candid) imgElements.candid.src = data.images.candid;
-      if (imgElements.detail) imgElements.detail.src = data.images.detail;
-      if (imgElements.hero) imgElements.hero.src = data.images.hero;
-    }
+  if (shortsPoster) {
+    shortsPoster.addEventListener('click', window.playShortsVideo);
   }
-
-  // Smooth scroll to simulator from Hero CTA
-  window.scrollToDemo = function(event) {
-    if (event) event.preventDefault();
-    window.trackEvent('hero_demo_click');
-    const simSection = document.getElementById('simulator');
-    if (simSection) {
-      simSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   // Checkout redirect logic with source tracking
   window.checkout = function(source = 'general') {
-    if (source === 'demo') {
-      window.trackEvent('demo_buy_click');
-    } else if (source === 'proof') {
-      window.trackEvent('proof_buy_click');
-    }
-    window.trackEvent('checkout_start', { source });
-    // Lead directly to Stripe checkout
+    window.trackEvent('checkout_start', { 
+      source: source, 
+      product: 'PFL Photoshoot Generator V2',
+      price: 990
+    });
+    // Direct link to Stripe checkout
     window.location.href = 'https://buy.stripe.com/7sYbJ10VP1DbcYV2BhcIE03';
   };
 });
