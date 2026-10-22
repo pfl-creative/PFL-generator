@@ -292,14 +292,20 @@ document.addEventListener('DOMContentLoaded', () => {
     shortsPoster.addEventListener('click', window.playShortsVideo);
   }
 
-  // Checkout redirect logic with source tracking
+  // Checkout redirect logic with source tracking & pre-checkout upsell flow
   window.checkout = function(source = 'general') {
     window.trackEvent('checkout_start', { 
       source: source, 
       product: 'PFL Photoshoot Generator V2',
       price: 990
     });
-    // Direct link to Stripe checkout
-    window.location.href = 'https://buy.stripe.com/7sYbJ10VP1DbcYV2BhcIE03';
+    // Redirect to pre-checkout upsell page, preserving UTM parameters
+    const searchParams = new URLSearchParams(window.location.search);
+    if (source && !searchParams.has('source')) {
+      searchParams.set('source', source);
+    }
+    const queryString = searchParams.toString();
+    const destination = queryString ? `library.html?${queryString}` : 'library.html';
+    window.location.href = destination;
   };
 });

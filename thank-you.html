@@ -8,16 +8,28 @@
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-DDGN5M6J9N');
-    gtag('event', 'purchase', {
-      transaction_id: 'pfl_' + Date.now(),
-      value: 990.00,
-      currency: 'THB',
-      items: [{
-        item_name: 'PFL Photoshoot Generator V2',
-        price: 990.00,
-        quantity: 1
-      }]
-    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const isBundle = urlParams.get('plan') === 'bundle' || urlParams.get('amount') === '1240';
+    const purchaseValue = isBundle ? 1240.00 : 990.00;
+    const purchaseContentName = isBundle ? 'PFL Photoshoot Generator V2 + 2 Libraries' : 'PFL Photoshoot Generator V2';
+    const txnId = urlParams.get('session_id') || ('pfl_' + Date.now());
+
+    // Deduplication check via sessionStorage to prevent duplicate purchase events on refresh
+    const dedupeKey = 'pfl_purchase_tracked_' + (urlParams.get('session_id') || 'standard');
+    if (!sessionStorage.getItem(dedupeKey)) {
+      sessionStorage.setItem(dedupeKey, 'true');
+      gtag('event', 'purchase', {
+        transaction_id: txnId,
+        value: purchaseValue,
+        currency: 'THB',
+        items: [{
+          item_name: purchaseContentName,
+          price: purchaseValue,
+          quantity: 1
+        }]
+      });
+    }
   </script>
 
   <!-- Meta Pixel Code -->
@@ -32,11 +44,15 @@
     'https://connect.facebook.net/en_US/fbevents.js');
     fbq('init', '1612021557290772');
     fbq('track', 'PageView');
-    fbq('track', 'Purchase', {
-      value: 990.00,
-      currency: 'THB',
-      content_name: 'PFL Photoshoot Generator V2'
-    });
+
+    if (!sessionStorage.getItem('fbq_' + dedupeKey)) {
+      sessionStorage.setItem('fbq_' + dedupeKey, 'true');
+      fbq('track', 'Purchase', {
+        value: purchaseValue,
+        currency: 'THB',
+        content_name: purchaseContentName
+      }, { eventID: txnId });
+    }
   </script>
   <noscript>
     <img height="1" width="1" style="display:none"
@@ -168,5 +184,21 @@
     </div>
   </footer>
 
+  <script>
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isBundle = urlParams.get('plan') === 'bundle' || urlParams.get('amount') === '1240';
+      if (isBundle) {
+        const productPill = document.querySelector('.thankyou-product-pill');
+        if (productPill) {
+          productPill.innerHTML = '<span>PFL Photoshoot Generator V2 + 2 Libraries</span> <span class="product-price">฿1,240</span>';
+        }
+        const enDesc = document.querySelector('.en-desc');
+        if (enDesc) {
+          enDesc.innerHTML = 'Your <strong>PFL Photoshoot Generator V2 + 2 Libraries</strong> will be delivered via email within <strong>15–20 minutes</strong>.';
+        }
+      }
+    })();
+  </script>
 </body>
 </html>
