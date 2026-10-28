@@ -12,7 +12,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const isBundle = urlParams.get('plan') === 'bundle' || urlParams.get('amount') === '1240';
     const purchaseValue = isBundle ? 1240.00 : 990.00;
-    const purchaseContentName = isBundle ? 'PFL Photoshoot Generator V2 + 2 Libraries' : 'PFL Photoshoot Generator V2';
+    const purchaseContentName = isBundle ? 'PFL Photoshoot Generator V3 + 2 Libraries' : 'PFL Photoshoot Generator V3';
     const txnId = urlParams.get('session_id') || ('pfl_' + Date.now());
 
     // Deduplication check via sessionStorage to prevent duplicate purchase events on refresh
@@ -62,7 +62,7 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="ขอบคุณสำหรับการสั่งซื้อ PFL Photoshoot Generator V2 จาก Prompt Fashion Lab">
+  <meta name="description" content="ขอบคุณสำหรับการสั่งซื้อ PFL Photoshoot Generator V3 จาก Prompt Fashion Lab">
   <title>ขอบคุณสำหรับการสั่งซื้อ | Prompt Fashion Lab</title>
   
   <!-- Google Fonts Import -->
@@ -83,7 +83,7 @@
       <a href="index.html" class="logo">
         PROMPT FASHION <span>LAB</span>
       </a>
-      <div class="brand-badge">PFL ✦ V2 STUDIO</div>
+      <div class="brand-badge">PFL ✦ V3 STUDIO</div>
     </div>
   </header>
 
@@ -111,7 +111,7 @@
 
       <!-- Product Name Badge -->
       <div class="thankyou-product-pill">
-        <span>PFL Photoshoot Generator V2</span>
+        <span>PFL Photoshoot Generator V3</span>
         <span class="product-price">฿990</span>
       </div>
 
@@ -143,7 +143,7 @@
           Thank you for your purchase.
         </p>
         <p class="en-desc" style="margin-bottom: 0.35rem;">
-          Your <strong>PFL Photoshoot Generator V2</strong> will be delivered via email within <strong>15–20 minutes</strong>.
+          Your <strong>PFL Photoshoot Generator V3</strong> will be delivered via email within <strong>15–20 minutes</strong>.
         </p>
         <p class="en-sub">
           Please check the email address you provided during checkout.
@@ -191,11 +191,11 @@
       if (isBundle) {
         const productPill = document.querySelector('.thankyou-product-pill');
         if (productPill) {
-          productPill.innerHTML = '<span>PFL Photoshoot Generator V2 + 2 Libraries</span> <span class="product-price">฿1,240</span>';
+          productPill.innerHTML = '<span>PFL Photoshoot Generator V3 + 2 Libraries</span> <span class="product-price">฿1,240</span>';
         }
         const enDesc = document.querySelector('.en-desc');
         if (enDesc) {
-          enDesc.innerHTML = 'Your <strong>PFL Photoshoot Generator V2 + 2 Libraries</strong> will be delivered via email within <strong>15–20 minutes</strong>.';
+          enDesc.innerHTML = 'Your <strong>PFL Photoshoot Generator V3 + 2 Libraries</strong> will be delivered via email within <strong>15–20 minutes</strong>.';
         }
       }
     })();

@@ -27,8 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const isBundle = plan === 'bundle';
     const price = isBundle ? 1240.00 : 990.00;
     const productName = isBundle 
-      ? 'PFL Photoshoot Generator V2 + 2 Libraries' 
-      : 'PFL Photoshoot Generator V2';
+      ? 'PFL Photoshoot Generator V3 + 2 Libraries' 
+      : 'PFL Photoshoot Generator V3';
     
     const baseUrl = isBundle 
       ? 'https://buy.stripe.com/7sY7sL7kd3Lj0c95NtcIE04' 
