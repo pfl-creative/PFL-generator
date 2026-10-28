@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.fbq === 'function') {
       if (eventName === 'checkout_start') {
         window.fbq('track', 'InitiateCheckout', {
-          content_name: 'PFL Photoshoot Generator V2',
+          content_name: 'PFL Photoshoot Generator V3',
           content_category: 'AI Tool',
           value: 990,
           currency: 'THB'
@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
       shortsPoster.classList.add('hidden');
     }
     if (shortsIframe) {
-      shortsIframe.src = 'https://www.youtube-nocookie.com/embed/jO3UOd4hLWE?autoplay=1&mute=0&playsinline=1&rel=0&modestbranding=1';
+      shortsIframe.src = 'https://www.youtube-nocookie.com/embed/GxAwC8Sb-1s?autoplay=1&mute=0&playsinline=1&rel=0&modestbranding=1';
     }
   };
 
@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.checkout = function(source = 'general') {
     window.trackEvent('checkout_start', { 
       source: source, 
-      product: 'PFL Photoshoot Generator V2',
+      product: 'PFL Photoshoot Generator V3',
       price: 990
     });
     // Redirect to pre-checkout upsell page, preserving UTM parameters
