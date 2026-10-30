@@ -239,14 +239,32 @@
   </footer>
 
   <!-- ==========================================
-       TRACKING SCRIPT (META PIXEL & GA4)
+       VERIFIED IDEMPOTENT PURCHASE TRACKING (META PIXEL & GA4)
+       - Fired ONLY on valid Stripe checkout session (?session_id=cs_...)
+       - Persistent cross-session deduplication via localStorage
+       - Stable eventID (sessionId) ensures cross-device deduplication in Meta
        ========================================== -->
   <script>
   (function() {
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get('session_id') || urlParams.get('checkout_session_id');
+    const isTest = urlParams.get('test') === 'true';
+    const testCode = urlParams.get('test_event_code');
 
-    // Deduplication check
+    // 1. Strict Stripe session validation
+    // Purchase must ONLY fire when redirected from Stripe with a valid checkout session ID
+    const isValidSession = sessionId && (
+      sessionId.startsWith('cs_live_') || 
+      sessionId.startsWith('cs_test_') ||
+      (isTest && sessionId.startsWith('cs_'))
+    );
+
+    if (!isValidSession) {
+      console.warn('[Purchase Tracking Suppressed] No valid Stripe checkout session ID found. Purchase event will not be fired.');
+      return;
+    }
+
+    // 2. Persistent transaction-level deduplication via localStorage
     const DEDUP_KEY = 'pfl_tracked_purchases';
     function getTrackedList() {
       try {
@@ -265,20 +283,21 @@
       } catch (e) {}
     }
 
-    const orderId = sessionId || ('pfl_bundle_' + new Date().toISOString().slice(0, 10) + '_' + Math.random().toString(36).substring(2, 8));
-    const alreadyTracked = sessionId ? getTrackedList().includes(sessionId) : false;
-
-    if (alreadyTracked) {
-      console.log('[Tracking Deduplication] Purchase event already recorded for order:', orderId, '- Skipping duplicate event.');
+    if (getTrackedList().includes(sessionId)) {
+      console.log('[Tracking Deduplication] Purchase event already recorded for Stripe session:', sessionId, '- Skipping duplicate event.');
       return;
     }
 
-    if (sessionId) {
-      markTracked(sessionId);
-    }
+    // Mark as tracked immediately before firing
+    markTracked(sessionId);
 
-    // Meta Pixel Purchase Event
+    // 3. Meta Pixel Purchase Event with stable eventID for deduplication
     if (typeof window.fbq === 'function') {
+      const eventOptions = { eventID: sessionId };
+      if (testCode) {
+        eventOptions.test_event_code = testCode;
+      }
+
       window.fbq('track', 'Purchase', {
         content_name: 'PFL Photoshoot Generator V3 + Libraries Bundle',
         content_category: 'AI Tool & Ebook Bundle',
@@ -287,14 +306,14 @@
         value: 1240.00,
         currency: 'THB',
         num_items: 3
-      }, { eventID: orderId });
-      console.log('[Meta Pixel] Purchase tracked: ฿1,240 (eventID:', orderId, ')');
+      }, eventOptions);
+      console.log('[Meta Pixel] Verified Purchase tracked: ฿1,240 (eventID:', sessionId, ')');
     }
 
-    // GA4 Purchase Event
+    // 4. GA4 Purchase Event with stable transaction_id
     if (typeof window.gtag === 'function') {
       window.gtag('event', 'purchase', {
-        transaction_id: orderId,
+        transaction_id: sessionId,
         value: 1240.00,
         currency: 'THB',
         items: [
@@ -303,7 +322,7 @@
           { item_name: 'Shot & Pose Library', price: 125.00, quantity: 1 }
         ]
       });
-      console.log('[GA4] Purchase event tracked: ฿1,240 (txn:', orderId, ')');
+      console.log('[GA4] Verified purchase event tracked: ฿1,240 (txn:', sessionId, ')');
     }
   })();
   </script>

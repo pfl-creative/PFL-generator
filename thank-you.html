@@ -8,28 +8,6 @@
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-DDGN5M6J9N');
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const isBundle = urlParams.get('plan') === 'bundle' || urlParams.get('amount') === '1240';
-    const purchaseValue = isBundle ? 1240.00 : 990.00;
-    const purchaseContentName = isBundle ? 'PFL Photoshoot Generator V3 + 2 Libraries' : 'PFL Photoshoot Generator V3';
-    const txnId = urlParams.get('session_id') || ('pfl_' + Date.now());
-
-    // Deduplication check via sessionStorage to prevent duplicate purchase events on refresh
-    const dedupeKey = 'pfl_purchase_tracked_' + (urlParams.get('session_id') || 'standard');
-    if (!sessionStorage.getItem(dedupeKey)) {
-      sessionStorage.setItem(dedupeKey, 'true');
-      gtag('event', 'purchase', {
-        transaction_id: txnId,
-        value: purchaseValue,
-        currency: 'THB',
-        items: [{
-          item_name: purchaseContentName,
-          price: purchaseValue,
-          quantity: 1
-        }]
-      });
-    }
   </script>
 
   <!-- Meta Pixel Code -->
@@ -44,20 +22,107 @@
     'https://connect.facebook.net/en_US/fbevents.js');
     fbq('init', '1612021557290772');
     fbq('track', 'PageView');
-
-    if (!sessionStorage.getItem('fbq_' + dedupeKey)) {
-      sessionStorage.setItem('fbq_' + dedupeKey, 'true');
-      fbq('track', 'Purchase', {
-        value: purchaseValue,
-        currency: 'THB',
-        content_name: purchaseContentName
-      }, { eventID: txnId });
-    }
   </script>
   <noscript>
     <img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=1612021557290772&ev=PageView&noscript=1"/>
   </noscript>
+  <!-- End Meta Pixel Code -->
+
+  <!-- ==========================================
+       VERIFIED IDEMPOTENT PURCHASE TRACKING (META PIXEL & GA4)
+       - Fired ONLY on valid Stripe checkout session (?session_id=cs_...)
+       - Persistent cross-session deduplication via localStorage
+       - Stable eventID (sessionId) ensures cross-device deduplication in Meta
+       ========================================== -->
+  <script>
+  (function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session_id') || urlParams.get('checkout_session_id');
+    const isTest = urlParams.get('test') === 'true';
+    const testCode = urlParams.get('test_event_code');
+
+    // 1. Strict Stripe session validation
+    // Purchase must ONLY fire when redirected from Stripe with a valid checkout session ID
+    const isValidSession = sessionId && (
+      sessionId.startsWith('cs_live_') || 
+      sessionId.startsWith('cs_test_') ||
+      (isTest && sessionId.startsWith('cs_'))
+    );
+
+    if (!isValidSession) {
+      console.warn('[Purchase Tracking Suppressed] No valid Stripe checkout session ID found. Purchase event will not be fired.');
+      return;
+    }
+
+    // 2. Persistent transaction-level deduplication via localStorage
+    const DEDUP_KEY = 'pfl_tracked_purchases';
+    function getTrackedList() {
+      try {
+        return JSON.parse(localStorage.getItem(DEDUP_KEY) || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+    function markTracked(id) {
+      try {
+        const list = getTrackedList();
+        if (!list.includes(id)) {
+          list.push(id);
+          localStorage.setItem(DEDUP_KEY, JSON.stringify(list));
+        }
+      } catch (e) {}
+    }
+
+    if (getTrackedList().includes(sessionId)) {
+      console.log('[Tracking Deduplication] Purchase event already recorded for Stripe session:', sessionId, '- Skipping duplicate event.');
+      return;
+    }
+
+    // Mark as tracked immediately before firing
+    markTracked(sessionId);
+
+    // 3. Determine order parameters
+    const isBundle = urlParams.get('plan') === 'bundle' || urlParams.get('amount') === '1240';
+    const purchaseValue = isBundle ? 1240.00 : 990.00;
+    const contentName = isBundle ? 'PFL Photoshoot Generator V3 + 2 Libraries' : 'PFL Photoshoot Generator V3';
+    const contentIds = isBundle ? ['generator_v3_bundle_1240'] : ['generator_v3_990'];
+
+    // 4. Meta Pixel Purchase Event with stable eventID for deduplication
+    if (typeof window.fbq === 'function') {
+      const eventOptions = { eventID: sessionId };
+      if (testCode) {
+        eventOptions.test_event_code = testCode;
+      }
+
+      window.fbq('track', 'Purchase', {
+        content_name: contentName,
+        content_category: 'AI Tool',
+        content_ids: contentIds,
+        content_type: 'product',
+        value: purchaseValue,
+        currency: 'THB',
+        num_items: isBundle ? 3 : 1
+      }, eventOptions);
+      console.log('[Meta Pixel] Verified Purchase tracked: ฿' + purchaseValue + ' (eventID: ' + sessionId + ')');
+    }
+
+    // 5. GA4 Purchase Event with stable transaction_id
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', 'purchase', {
+        transaction_id: sessionId,
+        value: purchaseValue,
+        currency: 'THB',
+        items: [{
+          item_name: contentName,
+          price: purchaseValue,
+          quantity: 1
+        }]
+      });
+      console.log('[GA4] Verified purchase event tracked: ฿' + purchaseValue + ' (txn: ' + sessionId + ')');
+    }
+  })();
+  </script>
   <!-- End Meta Pixel Code -->
 
   <meta charset="UTF-8">
