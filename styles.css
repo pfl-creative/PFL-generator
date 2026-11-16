@@ -3404,6 +3404,7 @@ footer {
   padding: 2rem 2rem 2.25rem;
   position: relative;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 @media (max-width: 768px) {
@@ -3460,6 +3461,10 @@ footer {
   .showcase-before-col .showcase-label-wrap {
     justify-content: center;
   }
+  .showcase-after-col .showcase-label-wrap {
+    justify-content: space-between;
+    width: 100%;
+  }
 }
 
 .showcase-badge-before {
@@ -3490,6 +3495,23 @@ footer {
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--color-black);
+}
+
+.showcase-swipe-hint {
+  display: none;
+  font-family: var(--font-grotesk);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-coral);
+  margin-left: auto;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .showcase-swipe-hint {
+    display: inline-block;
+  }
 }
 
 .showcase-arrow-col {
@@ -3540,7 +3562,7 @@ footer {
 
 @media (max-width: 768px) {
   .showcase-img-before {
-    max-width: 260px;
+    max-width: 180px;
     margin: 0 auto;
   }
 }
@@ -3559,9 +3581,29 @@ footer {
   width: 100%;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .showcase-after-grid {
-    gap: 0.45rem;
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.75rem;
+    padding: 0.25rem 0.25rem 0.65rem;
+    margin: 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-black) rgba(0, 0, 0, 0.08);
+  }
+
+  .showcase-after-grid::-webkit-scrollbar {
+    height: 4px;
+  }
+  .showcase-after-grid::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 4px;
+  }
+  .showcase-after-grid::-webkit-scrollbar-thumb {
+    background: var(--color-black);
+    border-radius: 4px;
   }
 }
 
@@ -3569,6 +3611,16 @@ footer {
   aspect-ratio: 4 / 5;
   width: 100%;
   box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 768px) {
+  .showcase-img-after {
+    flex: 0 0 170px;
+    width: 170px;
+    max-width: 170px;
+    scroll-snap-align: start;
+    box-shadow: 2px 2px 0 var(--color-black);
+  }
 }
 
 .showcase-img-after img {
