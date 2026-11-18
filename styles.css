@@ -3175,18 +3175,33 @@ footer {
 }
 
 /* ==========================================================================
-   SECTION 2: COMBINED WORKFLOW + PHOTOSHOOT RESULTS
+   SECTION 2: PHOTOSHOOT RESULTS
    ========================================================================== */
 .workflow-results-section {
   background-color: var(--color-ivory);
   padding: 5rem 0;
   border-top: 2px solid var(--color-black);
-  border-bottom: 2px solid var(--color-black);
   position: relative;
 }
 
 @media (max-width: 768px) {
   .workflow-results-section {
+    padding: 3.5rem 0;
+  }
+}
+
+/* ==========================================================================
+   SECTION: 4-STEP WORKFLOW
+   ========================================================================== */
+.workflow-steps-section {
+  background-color: var(--color-ivory);
+  padding: 5rem 0;
+  border-top: 2px solid var(--color-black);
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .workflow-steps-section {
     padding: 3.5rem 0;
   }
 }
